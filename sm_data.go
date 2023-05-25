@@ -10,14 +10,6 @@ import (
     "log"
 )
 
-type DefaultSessionType struct {
-        PduSessTypes  string
-}
-
-type DefaultSscMode struct {
-        sscModes  string
-}
-
 type Session_ambr struct {
         Dl_ambr string
         Ul_ambr string
@@ -35,31 +27,18 @@ func main() {
 
  client := protos.NewPMNSubscriberConfigServicerClient(cc)
  stored_ambr_val := Session_ambr{"2000 Mbps", "1000 Mbps"}
- var defaultSessionType = []DefaultSessionType{PduSessTypes:"IPV4"}
- var defaultSscMode = []DefaultSscMode{sscModes:"SSC_MODE_1"}
+ var defaultSessionType = "IPV4"
+ var defaultSscMode = "SSC_MODE_1"
  request := PMNConverter( stored_ambr_val, defaultSessionType,defaultSscMode)
  client.PMNSubscriberConfig(context.Background(), request)
 }
 
-func PMNConverter(ambrval Session_ambr, defaultSessionType []DefaultSessionType,defaultSscMode []DefaultSscMode) *protos.PMNSubscriberData {
+func PMNConverter(ambrval Session_ambr, defaultSessionType string,defaultSscMode string) *protos.PMNSubscriberData {
 
-        defaultSessionType1 := []*models.InternalPduSessionType{}
-          for _, value := range defaultSessionType {
-                  temp := new(models.InternalPduSessionType)
-                  temp.pduSessionTypes = value.pduSessionTypes
-                  defaultSessionType1 = append(defaultSessionType, temp)
-          }
-
-          defaultSscMode1 := []*models.InternalSscMode{}
-          for _, value := range defaultSscMode {
-                  temp := new(models.InternalSscMode)
-                  temp.sscModes = value.sscModes
-                  defaultSscMode1 = append(defaultSscMode, temp)
-          }
         
         singleNssai := &models.Snssai{
-                sst:    1,
-                sd:     "000001",
+                Sst:    1,
+                Sd:     "000001",
         }
 
         sessionAmbr := &models.Ambr{
@@ -68,40 +47,40 @@ func PMNConverter(ambrval Session_ambr, defaultSessionType []DefaultSessionType,
         }
 
         pduSessionTypes := &models.PduSessionTypes{
-                DefaultSessionType : defaultSessionType1 ,
-                AllowedSessionTypes :        "IPV4V6" 
+                DefaultSessionType : defaultSessionType ,
+                AllowedSessionTypes :        "IPV4V6" ,
         }
 
         arp := &models.Arp{
                 PriorityLevel : 1,
-                preemptVuln  : "PREEMPTABLE" ,
-                preemptCap  :   "NOT_PREEMPT" ,
+                PreemptVuln  : "PREEMPTABLE" ,
+                PreemptCap  :   "NOT_PREEMPT" ,
 
         }
 
         internal_5gQosProfile := &models.SubscribedDefaultQos{
-                Internal_5qi : 5 ,
+                Internal_5Qi : 5 ,
                 Arp  :        arp ,
                 PriorityLevel : 1,
         }
 
         sscModes := &models.SscModes{
-                DefaultSscMode : defaultSscMode1 ,
-                AllowedSscModes :   []string{"SSC_MODE_1","SSC_MODE_2","SSC_MODE_3"} 
+                DefaultSscMode : defaultSscMode ,
+                AllowedSscModes :   "SSC_MODE_1", 
         }
 
         dnnConfigurations := &models.DnnConfiguration{
                 PduSessionTypes : pduSessionTypes,
-                Internal_5gQosProfile :        internal_5gQosProfile ,
+                Internal_5GQosProfile :        internal_5gQosProfile ,
                 SessionAmbr : sessionAmbr ,
-                SscModes : sscModes 
+                SscModes : sscModes ,
         }
 
         smsd := &models.SessionManagementSubscriptionData {
-                SingleNssai:  singleNssai
-                DnnConfigurations :            dnnConfigurations
+                SingleNssai:  singleNssai,
+                DnnConfigurations :            dnnConfigurations,
         }
         return &protos.PMNSubscriberData{
-                plmnSmData: smsd,
+                PlmnSmData : smsd,
         }
 }
