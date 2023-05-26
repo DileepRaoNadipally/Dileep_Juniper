@@ -15,14 +15,6 @@ type Session_ambr struct {
         Ul_ambr string
 }
 
-type pdutype struct {
-        pdutype string
-}
-
-type ssc_mode struct {
-        sscmode string
-}
-
 func main() {
  fmt.Println("Hello client ...")
 
@@ -35,13 +27,11 @@ func main() {
 
  client := protos.NewPMNSubscriberConfigServicerClient(cc)
  stored_ambr_val := Session_ambr{"2000 Mbps", "1000 Mbps"}
- stored_pdu_type := pdutype{"IPV4V6"}
- stored_ssc_mode := ssc_mode{"SSC_MODE_1"}
- request := PMNConverter( stored_ambr_val,stored_pdu_type,stored_ssc_mode)
+ request := PMNConverter( stored_ambr_val)
  client.PMNSubscriberConfig(context.Background(), request)
 }
 
-func PMNConverter(ambrval Session_ambr,pdutypeval pdutype sscModeVal ssc_mode) *protos.PMNSubscriberData {
+func PMNConverter(ambrval Session_ambr) *protos.PMNSubscriberData {
 
         
         singleNssai := &models.Snssai{
@@ -54,8 +44,8 @@ func PMNConverter(ambrval Session_ambr,pdutypeval pdutype sscModeVal ssc_mode) *
                 Uplink:   ambrval.Ul_ambr,
         }
 
-        pduSessTypes := &models.InternalPduSessionType{
-                PduSessTypes : pdutypeval.pdutype ,
+        pduSessTypes := []*models.InternalPduSessionType{
+                PduSessTypes : "IPV4V6" ,
         }
 
         pduSessionTypes := &models.PduSessionTypes{
@@ -81,10 +71,10 @@ func PMNConverter(ambrval Session_ambr,pdutypeval pdutype sscModeVal ssc_mode) *
         }
 
         sscMode := &models.InternalSscMode{
-                SscModes  : sscModeVal ,
+                SscModes  : "SSC_MODE_1" ,
         }
 
-        sscModes := &models.SscModes{
+        sscModes := []*models.SscModes{
                 DefaultSscMode : sscMode ,
                 AllowedSscModes :   sscMode, 
         }
@@ -101,6 +91,6 @@ func PMNConverter(ambrval Session_ambr,pdutypeval pdutype sscModeVal ssc_mode) *
                 DnnConfigurations :            map[string]dnnConfigurations,
         }
         return &protos.PMNSubscriberData{
-                PlmnSmData : smsd,
+                PlmnSmData : map[string]smsd,
         }
 }
