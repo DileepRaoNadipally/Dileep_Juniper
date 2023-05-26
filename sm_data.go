@@ -15,6 +15,14 @@ type Session_ambr struct {
         Ul_ambr string
 }
 
+type pdutype struct {
+        pdutype string
+}
+
+type ssc_mode struct {
+        sscmode string
+}
+
 func main() {
  fmt.Println("Hello client ...")
 
@@ -27,13 +35,13 @@ func main() {
 
  client := protos.NewPMNSubscriberConfigServicerClient(cc)
  stored_ambr_val := Session_ambr{"2000 Mbps", "1000 Mbps"}
- var defaultSessionType = "IPV4"
- var defaultSscMode = "SSC_MODE_1"
- request := PMNConverter( stored_ambr_val, defaultSessionType,defaultSscMode)
+ stored_pdu_type := pdutype{"IPV4V6"}
+ stored_ssc_mode := ssc_mode{"SSC_MODE_1"}
+ request := PMNConverter( stored_ambr_val,stored_pdu_type,stored_ssc_mode)
  client.PMNSubscriberConfig(context.Background(), request)
 }
 
-func PMNConverter(ambrval Session_ambr, defaultSessionType string,defaultSscMode string) *protos.PMNSubscriberData {
+func PMNConverter(ambrval Session_ambr,pdutypeval pdutype sscModeVal ssc_mode) *protos.PMNSubscriberData {
 
         
         singleNssai := &models.Snssai{
@@ -46,15 +54,23 @@ func PMNConverter(ambrval Session_ambr, defaultSessionType string,defaultSscMode
                 Uplink:   ambrval.Ul_ambr,
         }
 
-        pduSessionTypes := &models.PduSessionTypes{
-                DefaultSessionType : defaultSessionType ,
-                AllowedSessionTypes :        "IPV4V6" ,
+        pduSessTypes := &models.InternalPduSessionType{
+                PduSessTypes : pdutypeval.pdutype ,
         }
+
+        pduSessionTypes := &models.PduSessionTypes{
+                DefaultSessionType : pduSessTypes ,
+                AllowedSessionTypes :      pduSessTypes ,
+        }
+
+        preemptionCapability := &models.PreemptionCapability{}
+
+        preemptionVulnerability  := &models.PreemptionVulnerability{}
 
         arp := &models.Arp{
                 PriorityLevel : 1,
-                PreemptVuln  : "PREEMPTABLE" ,
-                PreemptCap  :   "NOT_PREEMPT" ,
+                PreemptVuln  : preemptionVulnerability ,
+                PreemptCap  :   preemptionCapability ,
 
         }
 
@@ -64,9 +80,13 @@ func PMNConverter(ambrval Session_ambr, defaultSessionType string,defaultSscMode
                 PriorityLevel : 1,
         }
 
+        sscMode := &models.InternalSscMode{
+                SscModes  : sscModeVal ,
+        }
+
         sscModes := &models.SscModes{
-                DefaultSscMode : defaultSscMode ,
-                AllowedSscModes :   "SSC_MODE_1", 
+                DefaultSscMode : sscMode ,
+                AllowedSscModes :   sscMode, 
         }
 
         dnnConfigurations := &models.DnnConfiguration{
@@ -78,7 +98,7 @@ func PMNConverter(ambrval Session_ambr, defaultSessionType string,defaultSscMode
 
         smsd := &models.SessionManagementSubscriptionData {
                 SingleNssai:  singleNssai,
-                DnnConfigurations :            dnnConfigurations,
+                DnnConfigurations :            map[string]dnnConfigurations,
         }
         return &protos.PMNSubscriberData{
                 PlmnSmData : smsd,
