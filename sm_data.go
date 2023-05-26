@@ -44,13 +44,13 @@ func PMNConverter(ambrval Session_ambr) *protos.PMNSubscriberData {
                 Uplink:   ambrval.Ul_ambr,
         }
 
-        pduSessTypes := []*models.InternalPduSessionType{
-                PduSessTypes : "IPV4V6" ,
+        pduSessTypes := &models.InternalPduSessionType{
+                PduSessTypes : "IPV4" ,
         }
 
         pduSessionTypes := &models.PduSessionTypes{
                 DefaultSessionType : pduSessTypes ,
-                AllowedSessionTypes :      pduSessTypes ,
+                AllowedSessionTypes :      nil ,
         }
 
         preemptionCapability := &models.PreemptionCapability{}
@@ -74,9 +74,9 @@ func PMNConverter(ambrval Session_ambr) *protos.PMNSubscriberData {
                 SscModes  : "SSC_MODE_1" ,
         }
 
-        sscModes := []*models.SscModes{
+        sscModes := &models.SscModes{
                 DefaultSscMode : sscMode ,
-                AllowedSscModes :   sscMode, 
+                AllowedSscModes :   nil, 
         }
 
         dnnConfigurations := &models.DnnConfiguration{
